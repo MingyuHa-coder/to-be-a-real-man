@@ -142,6 +142,13 @@ body.group-open #bg::after { background: rgba(0,0,0,0.6); }
 }
 .cat .label { font-size: clamp(30px, 8.5vw, 40px); line-height: 1.1; padding-right: 76px; word-break: keep-all; position: relative; }
 .cat .hint  { font-size: 14px; color: #b5b5b5; margin-top: 8px; }
+.cat .hint.warn { color: #ff6b5a; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.cat .warn-tag {
+  flex: none;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.04em;
+  color: #111; background: #ffcc00;
+  padding: 2px 7px; border-radius: 4px;
+}
 
 /* ===== 재생 화면 ===== */
 #player {

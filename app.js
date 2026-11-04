@@ -16,6 +16,7 @@ const PLACEHOLDER_SECONDS = 6;  // 임시 화면 길이(초)
 //   id    : 영상 폴더 이름 (영어, 바꾸면 폴더 이름도 같이 바꿔야 함)
 //   name  : 화면에 보이는 이름
 //   hint  : 버튼 아래 작은 글씨
+//   warn  : true면 hint를 "⚠ 경고" 표시와 함께 빨갛게 보여줌
 //   color : 버튼 색
 //   lines : 영상이 없을 때 임시 화면에 나오는 대사
 // ----------------------------------------------------------------
@@ -28,7 +29,7 @@ const GROUPS = [
     color: "#ff6a00",
     subs: [
       {
-        id: "chest", name: "가슴 하는 날", hint: "가슴 펴. 오늘은 밀어붙이는 날이다.", color: "#ff3b1f",
+        id: "chest", name: "가슴 하는 날", hint: "멘탈 약하면 누르지 마라.", warn: true, color: "#ff3b1f",
         lines: [
           "벤치에 누웠으면\n변명도 같이 내려놔.",
           "오늘 미는 무게가\n너의 자신감이다.",
@@ -36,7 +37,7 @@ const GROUPS = [
         ],
       },
       {
-        id: "back", name: "등 하는 날", hint: "보이지 않는 곳이 진짜 실력이다.", color: "#ff8a00",
+        id: "back", name: "등 하는 날", hint: "등 뒤에서 욕먹는 기분일 거다.", warn: true, color: "#ff8a00",
         lines: [
           "등은 남이 본다.\n대충 하면 다 티 난다.",
           "팔로 당기지 마.\n등으로 당겨.",
@@ -44,7 +45,7 @@ const GROUPS = [
         ],
       },
       {
-        id: "shoulder", name: "어깨 하는 날", hint: "어깨가 서야 사람이 선다.", color: "#ffd000",
+        id: "shoulder", name: "어깨 하는 날", hint: "각오 없이 들어오지 마라.", warn: true, color: "#ffd000",
         lines: [
           "어깨 넓이가\n존재감이다.",
           "가볍다고 무시하지 마.\n어깨는 정직하다.",
@@ -52,7 +53,7 @@ const GROUPS = [
         ],
       },
       {
-        id: "arms", name: "팔 하는 날", hint: "소매가 터질 때까지.", color: "#ff3d8b",
+        id: "arms", name: "팔 하는 날", hint: "보고 나면 핑계가 사라진다.", warn: true, color: "#ff3d8b",
         lines: [
           "팔은 반동으로\n크지 않는다. 천천히.",
           "펌핑은 보상이다.\n그 전에 고통부터.",
@@ -60,7 +61,7 @@ const GROUPS = [
         ],
       },
       {
-        id: "legs", name: "하체 하는 날", hint: "도망치고 싶지? 그래서 가는 거다.", color: "#c13cff",
+        id: "legs", name: "하체 하는 날", hint: "누르는 순간 도망칠 곳은 없다.", warn: true, color: "#c13cff",
         lines: [
           "하체 빼먹는 놈은\n상체도 가짜다.",
           "계단 오를 때 후회해도\n오늘은 앉아.",
@@ -77,7 +78,7 @@ const GROUPS = [
     color: "#00d4ff",
     subs: [
       {
-        id: "weak", name: "왠지 힘이 빠질 때", hint: "기분 탓이다. 몸은 아직 남았다.", color: "#00d4ff",
+        id: "weak", name: "왠지 힘이 빠질 때", hint: "나약한 소리 할 거면 누르지 마라.", warn: true, color: "#00d4ff",
         lines: [
           "힘이 없는 게 아니라\n의지가 쉬고 있는 거다.",
           "물 한 모금 마시고\n다시 잡아.",
@@ -85,7 +86,7 @@ const GROUPS = [
         ],
       },
       {
-        id: "last-set", name: "마지막 세트", hint: "한 개 더. 여기서 끝내면 아무것도 안 바뀐다.", color: "#ff3b1f",
+        id: "last-set", name: "마지막 세트", hint: "누르면 한 개 더 들게 된다.", warn: true, color: "#ff3b1f",
         lines: [
           "지금 내려놓으면\n오늘 운동은 없던 거다.",
           "한 개 더.\n그게 네가 여기 온 이유야.",
@@ -93,7 +94,7 @@ const GROUPS = [
         ],
       },
       {
-        id: "cardio", name: "유산소 포기하고 싶을 때", hint: "숨 차는 게 정상이다. 속도 유지.", color: "#2bff88",
+        id: "cardio", name: "유산소 포기하고 싶을 때", hint: "보고 나면 속도 못 줄인다.", warn: true, color: "#2bff88",
         lines: [
           "속도 줄이지 마.\n숨 차는 게 정상이다.",
           "5분만 더.\n그다음에 생각해.",
@@ -101,7 +102,7 @@ const GROUPS = [
         ],
       },
       {
-        id: "more", name: "더 해야 하는데 하기 싫을 때", hint: "하기 싫은 그 세트가 차이를 만든다.", color: "#ffb800",
+        id: "more", name: "더 해야 하는데 하기 싫을 때", hint: "누르는 순간 세트 하나 추가다.", warn: true, color: "#ffb800",
         lines: [
           "하기 싫은 걸 할 때\n남자가 된다.",
           "여기서 집에 가면\n어제랑 똑같은 너다.",
@@ -188,7 +189,7 @@ function makeButton(num, item, onClick) {
   btn.innerHTML = `
     <span class="num display">${String(num).padStart(2, "0")}</span>
     <span class="label display">${item.name}</span>
-    <span class="hint">${item.hint}</span>`;
+    <span class="hint${item.warn ? " warn" : ""}">${item.warn ? '<b class="warn-tag">⚠ 경고</b>' : ""}${item.hint}</span>`;
   btn.addEventListener("click", () => {
     if (navigator.vibrate) navigator.vibrate(30);  // 누르면 살짝 진동 (안드로이드)
     onClick();
