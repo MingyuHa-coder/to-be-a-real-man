@@ -6,15 +6,15 @@
 
 | 큰 카테고리 | 작은 카테고리 | 영상 폴더 |
 |---|---|---|
-| 운동 전 | 가슴 하는 날 | `videos/before/chest` |
-| 운동 전 | 등 하는 날 | `videos/before/back` |
-| 운동 전 | 어깨 하는 날 | `videos/before/shoulder` |
-| 운동 전 | 팔 하는 날 | `videos/before/arms` |
-| 운동 전 | 하체 하는 날 | `videos/before/legs` |
-| 운동 중 | 왠지 힘이 빠질 때 | `videos/during/weak` |
-| 운동 중 | 마지막 세트 | `videos/during/last-set` |
-| 운동 중 | 유산소 포기하고 싶을 때 | `videos/during/cardio` |
-| 운동 중 | 더 해야 하는데 하기 싫을 때 | `videos/during/more` |
+| 운동 전 | 가슴 하는 날 | `videos/before/chest/(cheer·mock·push)` |
+| 운동 전 | 등 하는 날 | `videos/before/back/(cheer·mock·push)` |
+| 운동 전 | 어깨 하는 날 | `videos/before/shoulder/(cheer·mock·push)` |
+| 운동 전 | 팔 하는 날 | `videos/before/arms/(cheer·mock·push)` |
+| 운동 전 | 하체 하는 날 | `videos/before/legs/(cheer·mock·push)` |
+| 운동 중 | 왠지 힘이 빠질 때 | `videos/during/weak/(cheer·mock·push)` |
+| 운동 중 | 마지막 세트 | `videos/during/last-set/(cheer·mock·push)` |
+| 운동 중 | 유산소 포기하고 싶을 때 | `videos/during/cardio/(cheer·mock·push)` |
+| 운동 중 | 더 해야 하는데 하기 싫을 때 | `videos/during/more/(cheer·mock·push)` |
 
 ## 영상 넣기
 

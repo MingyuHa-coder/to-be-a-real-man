@@ -80,7 +80,59 @@ body.group-open #bg::after { background: rgba(0,0,0,0.6); }
 .sub { color: #cfcfcf; font-size: 15px; margin-top: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
 /* 첫 화면: 버튼은 아래쪽에 모아서 가운데로 헬스장이 보이게 */
-#home .list { flex: 0 0 auto; margin-top: auto; grid-auto-rows: auto; }
+#home .list, #start .go-btn { flex: 0 0 auto; margin-top: auto; grid-auto-rows: auto; }
+
+/* 시작하기 / 다음 버튼 */
+.go-btn {
+  margin-top: auto;
+  height: 76px;
+  border-radius: 20px;
+  font-size: 30px;
+  color: #000;
+  background: var(--accent);
+  box-shadow: 0 0 34px rgba(255, 59, 31, 0.55);
+  transition: transform 0.08s ease, opacity 0.15s ease;
+}
+.go-btn:active { transform: scale(0.97); }
+.go-btn:disabled { opacity: 0.3; box-shadow: none; }
+
+/* 나이 · 성향 질문 */
+.ask { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 8vh; }
+.ask-q { font-size: clamp(28px, 8vw, 36px); text-align: center; word-break: keep-all; }
+.age-box {
+  display: flex; align-items: baseline; justify-content: center; gap: 10px;
+  padding: 12px 28px;
+  border-bottom: 3px solid var(--accent);
+}
+.age-box input {
+  width: 2.2ch;
+  font-family: "Anton", sans-serif;
+  font-size: 96px;
+  line-height: 1;
+  text-align: center;
+  color: var(--text);
+  background: none;
+  border: 0;
+  outline: none;
+}
+.age-box input::placeholder { color: #444; }
+.age-box span { font-size: 34px; color: #cfcfcf; }
+.age-error { color: #ff6b5a; font-weight: 700; font-size: 15px; }
+.age-error[hidden] { display: none; }
+
+#type .ask-q { margin: 6px 0 4px; }
+.cat.picked { border-color: var(--c); }
+
+/* 첫 화면의 "34세 · 조롱형" 표시 */
+.me-chip {
+  margin-top: 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.me-chip i { font-style: normal; color: var(--muted); margin-left: 8px; text-decoration: underline; }
 
 /* 작은 카테고리 화면 위쪽 */
 .group-head { display: flex; align-items: center; gap: 14px; }

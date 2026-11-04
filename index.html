@@ -19,12 +19,56 @@
     </video>
   </div>
 
+  <!-- 화면 0: 시작 화면 -->
+  <main id="start" class="screen">
+    <header>
+      <p class="eyebrow">NO EXCUSES</p>
+      <h1 class="title">To be a<br><span>real man</span></h1>
+      <p class="sub">너한테 맞는 쓴소리를 준비한다.</p>
+    </header>
+    <button id="start-btn" class="go-btn display">시작하기</button>
+  </main>
+
+  <!-- 화면 0-1: 나이 입력 -->
+  <main id="age" class="screen" hidden>
+    <header class="group-head">
+      <button class="icon-btn back-btn" aria-label="뒤로">←</button>
+      <div>
+        <p class="eyebrow">STEP 1 / 2</p>
+        <h2 class="display">나이</h2>
+      </div>
+    </header>
+    <div class="ask">
+      <p class="ask-q display">몇 살이야?</p>
+      <label class="age-box">
+        <input id="age-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="00" autocomplete="off" aria-label="나이">
+        <span class="display">세</span>
+      </label>
+      <p id="age-error" class="age-error" hidden>10세에서 99세 사이로 입력해.</p>
+    </div>
+    <button id="age-next" class="go-btn display" disabled>다음</button>
+  </main>
+
+  <!-- 화면 0-2: 성향 고르기 -->
+  <main id="type" class="screen" hidden>
+    <header class="group-head">
+      <button class="icon-btn back-btn" aria-label="뒤로">←</button>
+      <div>
+        <p class="eyebrow">STEP 2 / 2</p>
+        <h2 class="display">성향</h2>
+      </div>
+    </header>
+    <p class="ask-q display">언제 더 자극을 받나요?</p>
+    <nav id="type-list" class="list"></nav>
+  </main>
+
   <!-- 화면 1: 큰 카테고리 (운동 전 / 운동 중) -->
-  <main id="home" class="screen">
+  <main id="home" class="screen" hidden>
     <header>
       <p class="eyebrow">NO EXCUSES</p>
       <h1 class="title">To be a<br><span>real man</span></h1>
       <p class="sub">지금 어디야? 변명은 안 듣는다.</p>
+      <button id="me-chip" class="me-chip" aria-label="나이·성향 다시 설정"></button>
     </header>
     <nav id="group-list" class="list"></nav>
   </main>

@@ -2,9 +2,10 @@
 //  To be a real man - 동작 코드
 //
 //  영상 넣는 법:
-//    videos/큰카테고리/작은카테고리/ 안에 1.mp4, 2.mp4, 3.mp4 ... 처럼
+//    videos/큰카테고리/작은카테고리/성향/ 안에 1.mp4, 2.mp4, 3.mp4 ... 처럼
 //    숫자 순서대로 이름 붙여 넣으면 자동으로 인식됩니다.
-//    예) videos/before/chest/1.mp4
+//    성향 폴더: cheer(응원), mock(조롱), push(압박)
+//    예) videos/before/chest/mock/1.mp4
 //    (중간 번호가 빠지면 그 뒤 번호는 인식되지 않아요)
 // ================================================================
 
@@ -113,10 +114,25 @@ const GROUPS = [
   },
 ];
 
+// ----------------------------------------------------------------
+//  성향 목록 (시작할 때 고르는 것)
+// ----------------------------------------------------------------
+const TYPES = [
+  { id: "cheer", name: "응원", hint: "믿어주면 불타오른다.", color: "#2bff88" },
+  { id: "mock", name: "조롱", hint: "무시당하면 이 악물고 증명한다.", color: "#ff3d8b" },
+  { id: "push", name: "압박", hint: "몰아붙여야 움직인다.", color: "#ff3b1f" },
+];
+
+// ---------- 내 정보 (나이, 성향) 저장 ----------
+//  이 휴대폰(브라우저)에만 저장돼요. 다음에 들어오면 지난번 값이 미리 채워져요.
+let me = { age: null, type: null };
+try { me = Object.assign(me, JSON.parse(localStorage.getItem("me") || "{}")); } catch (e) {}
+function saveMe() {
+  try { localStorage.setItem("me", JSON.stringify(me)); } catch (e) {}
+}
+
 // ---------- 화면 요소 ----------
 const $ = (id) => document.getElementById(id);
-const homeScreen = $("home");
-const groupScreen = $("group");
 const player = $("player");
 const video = $("video");
 const placeholder = $("placeholder");
@@ -125,6 +141,7 @@ const phProgress = $("ph-progress");
 const phNote = $("ph-note");
 const tapToPlay = $("tap-to-play");
 
+const groupScreen = $("group");
 const findGroup = (gid) => GROUPS.find((g) => g.id === gid);
 const findSub = (gid, sid) => findGroup(gid).subs.find((s) => s.id === sid);
 
@@ -162,13 +179,11 @@ async function findVideos(folder) {
   return list;
 }
 
-// 앱이 열리자마자 모든 카테고리 영상을 미리 찾아둠
+// 영상 목록은 처음 필요할 때 한 번만 찾아서 기억해 둠 (카테고리/성향별)
 const videoLists = {};
-for (const g of GROUPS) {
-  for (const s of g.subs) {
-    const folder = `${g.id}/${s.id}`;
-    videoLists[folder] = findVideos(folder);
-  }
+function getVideos(folder) {
+  if (!videoLists[folder]) videoLists[folder] = findVideos(folder);
+  return videoLists[folder];
 }
 
 function pickRandom(key, items) {
@@ -203,6 +218,49 @@ GROUPS.forEach((g, i) => {
   groupList.appendChild(makeButton(i + 1, g, () => go({ screen: "group", group: g.id })));
 });
 
+// ---------- 시작 → 나이 → 성향 ----------
+const SCREENS = ["start", "age", "type", "home", "group"];
+const ageInput = $("age-input");
+const ageNext = $("age-next");
+const ageError = $("age-error");
+const validAge = (n) => n >= 10 && n <= 99;
+
+$("start-btn").addEventListener("click", () => go({ screen: "age" }));
+
+ageInput.addEventListener("input", () => {
+  ageInput.value = ageInput.value.replace(/[^0-9]/g, "");
+  const n = Number(ageInput.value);
+  ageNext.disabled = !validAge(n);
+  ageError.hidden = ageInput.value.length < 2 || validAge(n);
+});
+ageInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !ageNext.disabled) ageNext.click();
+});
+ageNext.addEventListener("click", () => {
+  me.age = Number(ageInput.value);
+  saveMe();
+  ageInput.blur();
+  go({ screen: "type" });
+});
+
+const typeList = $("type-list");
+typeList.classList.add("few");
+TYPES.forEach((t, i) => {
+  typeList.appendChild(makeButton(i + 1, t, () => {
+    me.type = t.id;
+    saveMe();
+    GROUPS.forEach((g) => g.subs.forEach((s) => getVideos(`${g.id}/${s.id}/${t.id}`)));  // 미리 찾아두기
+    go({ screen: "home" });
+  }));
+});
+
+$("me-chip").addEventListener("click", () => go({ screen: "age" }));
+
+function showMe() {
+  const t = TYPES.find((x) => x.id === me.type);
+  $("me-chip").innerHTML = `${me.age}세 · <b style="color:${t ? t.color : "inherit"}">${t ? t.name : "-"}</b>형 <i>다시 설정</i>`;
+}
+
 // ---------- 화면 전환 (휴대폰 뒤로가기 버튼도 동작하도록) ----------
 function go(state) {
   history.pushState(state, "");
@@ -211,16 +269,25 @@ function go(state) {
 
 function render(state) {
   stopAll();
-  homeScreen.hidden = state.screen !== "home";
-  groupScreen.hidden = state.screen !== "group";
+  SCREENS.forEach((id) => { $(id).hidden = state.screen !== id; });
   player.hidden = state.screen !== "player";
 
   // 영상 재생 중에는 배경 영상을 멈춰서 배터리 아끼기
   const bgVideo = $("bg-video");
-  document.body.classList.toggle("group-open", state.screen === "group");
+  document.body.classList.toggle("group-open", ["group", "age", "type"].includes(state.screen));
   if (state.screen === "player") bgVideo.pause();
   else bgVideo.play().catch(() => {});
 
+  if (state.screen === "age") {
+    ageInput.value = me.age ? String(me.age) : "";
+    ageNext.disabled = !validAge(Number(ageInput.value));
+    ageError.hidden = true;
+    setTimeout(() => ageInput.focus(), 50);
+  }
+  if (state.screen === "type") {
+    typeList.querySelectorAll(".cat").forEach((b, i) => b.classList.toggle("picked", TYPES[i].id === me.type));
+  }
+  if (state.screen === "home") showMe();
   if (state.screen === "group") showGroup(state.group);
   if (state.screen === "player") play(state.group, state.sub);
   window.scrollTo(0, 0);
@@ -243,17 +310,17 @@ function showGroup(gid) {
 // ---------- 재생 ----------
 async function play(gid, sid) {
   const sub = findSub(gid, sid);
-  const folder = `${gid}/${sid}`;
+  const folder = `${gid}/${sid}/${me.type || "push"}`;
   current = { gid, sid };
   player.style.setProperty("--c", sub.color);
   $("player-cat").textContent = sub.name;
   stopAll();
 
-  const list = await videoLists[folder];
+  const list = await getVideos(folder);
   if (!current || current.gid !== gid || current.sid !== sid) return; // 그새 나갔으면 중단
 
   if (list.length === 0) {
-    showPlaceholder(sub, folder);
+    showPlaceholder(sub, folder, gid, sid);
     return;
   }
 
@@ -266,17 +333,17 @@ async function play(gid, sid) {
   }
 }
 
-function showPlaceholder(sub, folder) {
+function showPlaceholder(sub, folder, gid, sid) {
   video.hidden = true;
   placeholder.hidden = false;
 
-  phLine.textContent = pickRandom(folder + "-line", sub.lines);
+  phLine.textContent = pickRandom(`${gid}/${sid}-line`, sub.lines);
   phLine.style.animation = "none";
   void phLine.offsetWidth;
   phLine.style.animation = "";
 
   phNote.innerHTML =
-    `아직 영상이 없어서 임시 화면이에요.<br>` +
+    `아직 '${(TYPES.find((t) => t.id === me.type) || {}).name || ""}' 영상이 없어서 임시 화면이에요.<br>` +
     `<code>videos/${folder}/1.mp4</code> 를 넣으면 영상이 나와요.`;
 
   phProgress.style.transition = "none";
@@ -297,6 +364,7 @@ function stopAll() {
 // ---------- 버튼 연결 ----------
 const goBack = () => history.back();
 $("group-back").addEventListener("click", goBack);
+document.querySelectorAll(".back-btn").forEach((b) => b.addEventListener("click", goBack));
 $("back").addEventListener("click", goBack);
 $("close").addEventListener("click", goBack);
 $("next").addEventListener("click", () => current && play(current.gid, current.sid));
@@ -307,9 +375,9 @@ $("tap-btn").addEventListener("click", () => {
 
 window.addEventListener("popstate", (e) => {
   if (!e.state || e.state.screen !== "player") current = null;
-  render(e.state || { screen: "home" });
+  render(e.state || { screen: "start" });
 });
 
 // 처음 시작 화면
-history.replaceState({ screen: "home" }, "");
-render({ screen: "home" });
+history.replaceState({ screen: "start" }, "");
+render({ screen: "start" });
