@@ -12,6 +12,13 @@
 </head>
 <body>
 
+  <!-- 배경: 헬스장 영상 (앞으로 재생 → 거꾸로 재생을 반복해서 끊김 없이) -->
+  <div id="bg" aria-hidden="true">
+    <video id="bg-video" autoplay muted loop playsinline preload="auto" poster="bg/gym.jpg">
+      <source src="bg/gym.mp4" type="video/mp4">
+    </video>
+  </div>
+
   <!-- 화면 1: 큰 카테고리 (운동 전 / 운동 중) -->
   <main id="home" class="screen">
     <header>

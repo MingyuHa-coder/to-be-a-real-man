@@ -214,6 +214,12 @@ function render(state) {
   groupScreen.hidden = state.screen !== "group";
   player.hidden = state.screen !== "player";
 
+  // 영상 재생 중에는 배경 영상을 멈춰서 배터리 아끼기
+  const bgVideo = $("bg-video");
+  document.body.classList.toggle("group-open", state.screen === "group");
+  if (state.screen === "player") bgVideo.pause();
+  else bgVideo.play().catch(() => {});
+
   if (state.screen === "group") showGroup(state.group);
   if (state.screen === "player") play(state.group, state.sub);
   window.scrollTo(0, 0);
