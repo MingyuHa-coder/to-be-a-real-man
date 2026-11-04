@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>To be a real man</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Black+Han+Sans&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 화면 1: 큰 카테고리 (운동 전 / 운동 중) -->
+  <main id="home" class="screen">
+    <header>
+      <p class="eyebrow">NO EXCUSES</p>
+      <h1 class="title">To be a<br><span>real man</span></h1>
+      <p class="sub">지금 어디야? 변명은 안 듣는다.</p>
+    </header>
+    <nav id="group-list" class="list"></nav>
+  </main>
+
+  <!-- 화면 2: 작은 카테고리 -->
+  <main id="group" class="screen" hidden>
+    <header class="group-head">
+      <button id="group-back" class="icon-btn" aria-label="뒤로">←</button>
+      <div>
+        <p id="group-eyebrow" class="eyebrow"></p>
+        <h2 id="group-title" class="display"></h2>
+      </div>
+    </header>
+    <nav id="sub-list" class="list"></nav>
+  </main>
+
+  <!-- 화면 3: 영상 재생 -->
+  <section id="player" hidden>
+    <video id="video" playsinline preload="auto"></video>
+
+    <!-- 영상이 아직 없을 때 보여주는 임시 화면 -->
+    <div id="placeholder" hidden>
+      <div class="avatar"><span>AI</span></div>
+      <p id="ph-line" class="ph-line display"></p>
+      <div class="ph-bar"><i id="ph-progress"></i></div>
+      <p id="ph-note" class="ph-note"></p>
+    </div>
+
+    <div id="tap-to-play" hidden>
+      <button id="tap-btn" class="display">▶ 눌러서 재생</button>
+    </div>
+
+    <div class="player-top">
+      <span id="player-cat" class="tag display"></span>
+      <button id="close" class="icon-btn" aria-label="닫기">✕</button>
+    </div>
+
+    <div class="player-bottom">
+      <button id="next" class="big-btn primary display">한 번 더 ↻</button>
+      <button id="back" class="big-btn display">돌아가기</button>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
