@@ -123,6 +123,40 @@ const TYPES = [
   { id: "push", name: "압박", hint: "몰아붙여야 움직인다.", color: "#ff3b1f" },
 ];
 
+// ----------------------------------------------------------------
+//  타이머 설정 ("지금 바로 시작"을 누르면 나오는 운동 타이머)
+//   ※ 지금은 임시 값이에요. 운동별 목표 시간과 나이별 차등은 나중에 정해서 여기만 바꾸면 돼요.
+// ----------------------------------------------------------------
+const READY_SECONDS = 3;  // 시작 전 "3, 2, 1" 준비 시간
+
+// 운동(작은 카테고리)별 목표 시간 (초)
+const TIMER_SECONDS = {
+  chest: 60, back: 60, shoulder: 60, arms: 60, legs: 60,
+  weak: 60, "last-set": 60, cardio: 60, more: 60,
+};
+
+// 나이에 따른 차등: 나이가 upTo 이하이면 목표 시간 × factor
+//   예) factor 1.2 → 20% 더 길게, 0.8 → 20% 더 짧게. 지금은 모두 1(그대로).
+const AGE_RULES = [
+  { upTo: 29, factor: 1 },
+  { upTo: 39, factor: 1 },
+  { upTo: 49, factor: 1 },
+  { upTo: 99, factor: 1 },
+];
+
+// 타이머가 끝났을 때 성향별 한마디
+const TIMER_DONE_LINES = {
+  cheer: ["잘했어! 진짜 멋있다.", "봐, 할 수 있잖아.", "오늘의 너, 최고야."],
+  mock: ["오, 그 정도는 하네?", "기대 안 했는데… 좀 놀랐다.", "끝까지 버틴 건 인정."],
+  push: ["끝? 아니. 한 세트 더 할 수 있잖아.", "숨 고르고 다시 간다.", "이제 몸 좀 풀렸네."],
+};
+
+function timerGoal(sid) {
+  const base = TIMER_SECONDS[sid] || 60;
+  const rule = AGE_RULES.find((r) => (me.age || 0) <= r.upTo);
+  return Math.max(5, Math.round(base * (rule ? rule.factor : 1)));
+}
+
 // ---------- 내 정보 (나이, 성향) 저장 ----------
 //  이 휴대폰(브라우저)에만 저장돼요. 다음에 들어오면 지난번 값이 미리 채워져요.
 let me = { age: null, type: null };
@@ -219,7 +253,8 @@ GROUPS.forEach((g, i) => {
 });
 
 // ---------- 시작 → 나이 → 성향 ----------
-const SCREENS = ["start", "age", "type", "home", "group"];
+const SCREENS = ["start", "age", "type", "home", "group", "timer"];
+let curState = { screen: "start" };
 const ageInput = $("age-input");
 const ageNext = $("age-next");
 const ageError = $("age-error");
@@ -240,7 +275,8 @@ ageNext.addEventListener("click", () => {
   me.age = Number(ageInput.value);
   saveMe();
   ageInput.blur();
-  go({ screen: "type" });
+  if (curState.change) history.back();   // "나이 수정"으로 들어왔으면 원래 화면으로
+  else go({ screen: "type" });
 });
 
 const typeList = $("type-list");
@@ -250,15 +286,18 @@ TYPES.forEach((t, i) => {
     me.type = t.id;
     saveMe();
     GROUPS.forEach((g) => g.subs.forEach((s) => getVideos(`${g.id}/${s.id}/${t.id}`)));  // 미리 찾아두기
-    go({ screen: "home" });
+    if (curState.change) history.back();   // "성향 바꾸기"로 들어왔으면 원래 화면으로
+    else go({ screen: "home" });
   }));
 });
 
-$("me-chip").addEventListener("click", () => go({ screen: "age" }));
+$("me-age").addEventListener("click", () => go({ screen: "age", change: true }));
+$("me-type").addEventListener("click", () => go({ screen: "type", change: true }));
 
 function showMe() {
   const t = TYPES.find((x) => x.id === me.type);
-  $("me-chip").innerHTML = `${me.age}세 · <b style="color:${t ? t.color : "inherit"}">${t ? t.name : "-"}</b>형 <i>다시 설정</i>`;
+  $("me-age").innerHTML = `${me.age || "-"}세 <i>수정</i>`;
+  $("me-type").innerHTML = `<b style="color:${t ? t.color : "inherit"}">${t ? t.name : "-"}</b>형 <i>성향 바꾸기 ⇄</i>`;
 }
 
 // ---------- 화면 전환 (휴대폰 뒤로가기 버튼도 동작하도록) ----------
@@ -268,28 +307,34 @@ function go(state) {
 }
 
 function render(state) {
+  curState = state;
   stopAll();
+  stopTimer();
   SCREENS.forEach((id) => { $(id).hidden = state.screen !== id; });
   player.hidden = state.screen !== "player";
 
   // 영상 재생 중에는 배경 영상을 멈춰서 배터리 아끼기
   const bgVideo = $("bg-video");
-  document.body.classList.toggle("group-open", ["group", "age", "type"].includes(state.screen));
+  document.body.classList.toggle("group-open", ["group", "age", "type", "timer"].includes(state.screen));
   if (state.screen === "player") bgVideo.pause();
   else bgVideo.play().catch(() => {});
 
   if (state.screen === "age") {
+    $("age-eyebrow").textContent = state.change ? "나이 수정" : "STEP 1 / 2";
+    ageNext.textContent = state.change ? "저장" : "다음";
     ageInput.value = me.age ? String(me.age) : "";
     ageNext.disabled = !validAge(Number(ageInput.value));
     ageError.hidden = true;
     setTimeout(() => ageInput.focus(), 50);
   }
   if (state.screen === "type") {
+    $("type-eyebrow").textContent = state.change ? "성향 바꾸기" : "STEP 2 / 2";
     typeList.querySelectorAll(".cat").forEach((b, i) => b.classList.toggle("picked", TYPES[i].id === me.type));
   }
   if (state.screen === "home") showMe();
   if (state.screen === "group") showGroup(state.group);
   if (state.screen === "player") play(state.group, state.sub);
+  if (state.screen === "timer") startTimer(state.group, state.sub);
   window.scrollTo(0, 0);
 }
 
@@ -361,13 +406,160 @@ function stopAll() {
   tapToPlay.hidden = true;
 }
 
+// ---------- 운동 타이머 ----------
+const RING_LEN = 2 * Math.PI * 90;
+const ringFg = $("ring-fg");
+ringFg.style.strokeDasharray = RING_LEN;
+const tLeft = $("timer-left");
+const tRight = $("timer-right");
+let T = null;   // 타이머 상태
+let wakeLock = null;
+
+const fmt = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+
+function startTimer(gid, sid) {
+  const sub = findSub(gid, sid);
+  $("timer").style.setProperty("--theme", sub.color);
+  $("timer").style.setProperty("--c", sub.color);
+  $("timer-title").textContent = sub.name;
+  const goal = timerGoal(sid);
+  $("timer-goal").textContent = `목표 ${fmt(goal)}`;
+  $("timer-msg").textContent = "";
+  T = { gid, sid, goal, phase: "ready", left: READY_SECONDS * 1000, last: Date.now(), paused: false, tick: null };
+  setTimerButtons("running");
+  keepScreenOn(true);
+  T.tick = setInterval(timerTick, 100);
+  timerTick();
+}
+
+function timerTick() {
+  if (!T || T.paused) return;
+  const now = Date.now();
+  T.left -= now - T.last;
+  T.last = now;
+
+  if (T.phase === "ready") {
+    if (T.left <= 0) {
+      T.phase = "go";
+      T.left += T.goal * 1000;
+      buzz([80]);
+      beep(880, 0.15);
+    }
+  } else if (T.phase === "go" && T.left <= 0) {
+    return finishTimer();
+  }
+  drawTimer();
+}
+
+function drawTimer() {
+  const sec = Math.max(0, Math.ceil(T.left / 1000));
+  const total = T.phase === "ready" ? READY_SECONDS : T.goal;
+  const ratio = Math.max(0, Math.min(1, T.left / (total * 1000)));
+  ringFg.style.strokeDashoffset = RING_LEN * (1 - ratio);
+  $("timer").classList.toggle("ready", T.phase === "ready");
+  $("timer-phase").textContent = T.phase === "ready" ? "준비" : T.paused ? "일시정지" : "운동 중";
+  $("timer-time").textContent = T.phase === "ready" ? String(sec) : fmt(sec);
+  if (T.phase === "go" && sec <= 3 && sec > 0 && T.lastBeep !== sec) {   // 마지막 3초 삑
+    T.lastBeep = sec;
+    beep(660, 0.08);
+  }
+}
+
+function finishTimer() {
+  clearInterval(T.tick);
+  T.phase = "done";
+  T.left = 0;
+  ringFg.style.strokeDashoffset = RING_LEN;
+  $("timer").classList.remove("ready");
+  $("timer-phase").textContent = "끝!";
+  $("timer-time").textContent = fmt(0);
+  const lines = TIMER_DONE_LINES[me.type] || TIMER_DONE_LINES.push;
+  $("timer-msg").textContent = lines[Math.floor(Math.random() * lines.length)];
+  setTimerButtons("done");
+  buzz([200, 100, 200, 100, 400]);
+  beep(990, 0.5);
+  keepScreenOn(false);
+}
+
+function setTimerButtons(mode) {
+  if (mode === "done") {
+    tLeft.textContent = "처음으로";
+    tRight.textContent = "한 세트 더 ↻";
+  } else {
+    tLeft.textContent = T && T.paused ? "계속" : "일시정지";
+    tRight.textContent = "끝내기";
+  }
+  $("timer").dataset.mode = mode;
+}
+
+tLeft.addEventListener("click", () => {
+  if (!T) return;
+  if (T.phase === "done") return go({ screen: "home" });
+  T.paused = !T.paused;
+  T.last = Date.now();
+  setTimerButtons("running");
+  drawTimer();
+});
+tRight.addEventListener("click", () => {
+  if (!T) return;
+  unlockAudio();
+  if (T.phase === "done") return startTimer(T.gid, T.sid);   // 한 세트 더
+  finishTimer();                                             // 끝내기
+});
+
+function stopTimer() {
+  if (T) clearInterval(T.tick);
+  T = null;
+  keepScreenOn(false);
+}
+
+function buzz(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+let audioCtx = null;
+// 휴대폰은 버튼을 누른 순간에만 소리를 허락해서, 누를 때 미리 소리 장치를 깨워 둠
+function unlockAudio() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+  } catch (e) {}
+}
+function beep(freq, sec) {
+  try {
+    unlockAudio();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + sec);
+    o.connect(g).connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + sec);
+  } catch (e) {}
+}
+
+// 타이머 도는 동안 화면이 꺼지지 않게 (지원하는 휴대폰만)
+async function keepScreenOn(on) {
+  try {
+    if (on && "wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen");
+    else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) {}
+}
+
 // ---------- 버튼 연결 ----------
 const goBack = () => history.back();
 $("group-back").addEventListener("click", goBack);
 document.querySelectorAll(".back-btn").forEach((b) => b.addEventListener("click", goBack));
-$("back").addEventListener("click", goBack);
 $("close").addEventListener("click", goBack);
-$("next").addEventListener("click", () => current && play(current.gid, current.sid));
+$("more").addEventListener("click", () => current && play(current.gid, current.sid));   // 아직 부족해 → 다른 영상
+$("start-now").addEventListener("click", () => {
+  if (!current) return;
+  const { gid, sid } = current;
+  current = null;
+  unlockAudio();
+  go({ screen: "timer", group: gid, sub: sid });
+});
 $("tap-btn").addEventListener("click", () => {
   tapToPlay.hidden = true;
   video.play();

@@ -123,9 +123,9 @@ body.group-open #bg::after { background: rgba(0,0,0,0.6); }
 #type .ask-q { margin: 6px 0 4px; }
 .cat.picked { border-color: var(--c); }
 
-/* 첫 화면의 "34세 · 조롱형" 표시 */
+/* 첫 화면의 "34세" · "조롱형 성향 바꾸기" 표시 */
+.me-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .me-chip {
-  margin-top: 14px;
   padding: 8px 14px;
   border-radius: 999px;
   font-size: 14px;
@@ -309,7 +309,7 @@ body.group-open #bg::after { background: rgba(0,0,0,0.6); }
   position: absolute;
   bottom: 0; left: 0; right: 0;
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: 1fr 1.35fr;
   gap: 12px;
   padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
   background: #000;
@@ -324,3 +324,44 @@ body.group-open #bg::after { background: rgba(0,0,0,0.6); }
 }
 .big-btn.primary { background: var(--c); border-color: var(--c); color: #000; }
 .big-btn:active { transform: scale(0.96); }
+
+/* ===== 운동 타이머 ===== */
+#timer { --c: var(--accent); }
+.timer-body {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 22px;
+}
+.ring { position: relative; width: min(78vw, 340px); aspect-ratio: 1; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-bg, .ring-fg { fill: none; stroke-width: 12; }
+.ring-bg { stroke: rgba(255, 255, 255, 0.12); }
+.ring-fg {
+  stroke: var(--c);
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--c) 70%, transparent));
+  transition: stroke-dashoffset 0.12s linear;
+}
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+.timer-phase { font-size: 22px; color: var(--c); }
+.timer-time {
+  font-family: "Anton", sans-serif;
+  font-size: clamp(72px, 22vw, 104px);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+#timer.ready .timer-time { font-size: clamp(110px, 34vw, 150px); color: var(--c); }
+.timer-goal { font-size: 15px; color: #bdbdbd; }
+.timer-msg {
+  min-height: 1.3em;
+  font-size: clamp(22px, 6.4vw, 28px);
+  text-align: center;
+  word-break: keep-all;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+}
+#timer[data-mode="done"] .timer-msg { animation: pop 0.35s ease-out; }
+.timer-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 12px; }

@@ -34,7 +34,7 @@
     <header class="group-head">
       <button class="icon-btn back-btn" aria-label="뒤로">←</button>
       <div>
-        <p class="eyebrow">STEP 1 / 2</p>
+        <p id="age-eyebrow" class="eyebrow">STEP 1 / 2</p>
         <h2 class="display">나이</h2>
       </div>
     </header>
@@ -54,7 +54,7 @@
     <header class="group-head">
       <button class="icon-btn back-btn" aria-label="뒤로">←</button>
       <div>
-        <p class="eyebrow">STEP 2 / 2</p>
+        <p id="type-eyebrow" class="eyebrow">STEP 2 / 2</p>
         <h2 class="display">성향</h2>
       </div>
     </header>
@@ -68,7 +68,10 @@
       <p class="eyebrow">NO EXCUSES</p>
       <h1 class="title">To be a<br><span>real man</span></h1>
       <p class="sub">지금 어디야? 변명은 안 듣는다.</p>
-      <button id="me-chip" class="me-chip" aria-label="나이·성향 다시 설정"></button>
+      <div class="me-row">
+        <button id="me-age" class="me-chip" aria-label="나이 수정"></button>
+        <button id="me-type" class="me-chip" aria-label="성향 바꾸기"></button>
+      </div>
     </header>
     <nav id="group-list" class="list"></nav>
   </main>
@@ -107,10 +110,39 @@
     </div>
 
     <div class="player-bottom">
-      <button id="next" class="big-btn primary display">한 번 더 ↻</button>
-      <button id="back" class="big-btn display">돌아가기</button>
+      <button id="more" class="big-btn display">아직 부족해 ↻</button>
+      <button id="start-now" class="big-btn primary display">지금 바로 시작 ▶</button>
     </div>
   </section>
+
+  <!-- 화면 4: 운동 타이머 ("지금 바로 시작"을 누르면) -->
+  <main id="timer" class="screen" hidden>
+    <header class="group-head">
+      <button class="icon-btn back-btn" aria-label="뒤로">←</button>
+      <div>
+        <p class="eyebrow">GO NOW</p>
+        <h2 id="timer-title" class="display"></h2>
+      </div>
+    </header>
+    <div class="timer-body">
+      <div class="ring">
+        <svg viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="ring-bg" cx="100" cy="100" r="90"></circle>
+          <circle id="ring-fg" class="ring-fg" cx="100" cy="100" r="90"></circle>
+        </svg>
+        <div class="ring-center">
+          <p id="timer-phase" class="timer-phase display"></p>
+          <p id="timer-time" class="timer-time">0:00</p>
+          <p id="timer-goal" class="timer-goal"></p>
+        </div>
+      </div>
+      <p id="timer-msg" class="timer-msg display"></p>
+    </div>
+    <div class="timer-actions">
+      <button id="timer-left" class="big-btn display">일시정지</button>
+      <button id="timer-right" class="big-btn primary display">끝내기</button>
+    </div>
+  </main>
 
   <script src="app.js"></script>
 </body>
